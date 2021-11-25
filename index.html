@@ -86,7 +86,7 @@
 
     submitButton.onclick = async function () {
         //infoDisplay.innerHTML = email.value + "Login Successful"
-        //const response = await axios.post("/sendinfo", {email : email.value, password : password.value});
+        const response = await axios.post("/querywebshrinker", {website : website.value, email : email.value});
 
         /* const encoded_url = btoa(website);
         const response = await axios.get(`${ws_api}/${encoded_url}`, {
@@ -96,11 +96,11 @@
             }
         }); */
 
-        const signed_url = generate_ws_signed_url(website);
+        /* const signed_url = generate_ws_signed_url(website);
 
-        const response = await axios.get(signed_url);
+        const response = await axios.get(signed_url);*/
 
-        console.log(response);
+        console.log(response); 
 
         //window.location.href = `/?email=${response.data.email}`
 
