@@ -48,6 +48,9 @@
                     <div class="card-body" id="infoDisplay">
                         
                     </div>
+                    <div class="card-body" id="threatsDisplay">
+                        
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,6 +60,8 @@
 
 <script>
 
+
+
     const ws_api_key = "Qj6yWmAjnrMpZNx7JRpE";
     const ws_api_secret = "R87VQOnuh47ITqZQdUuU";
     const ws_api = "https://api.webshrinker.com/categories/v3";
@@ -65,12 +70,13 @@
     let website = document.getElementById("userSite");
     let submitButton = document.getElementById("submitButton");
     let infoDisplay = document.getElementById("infoDisplay");
+    let threatsDisplay = document.getElementById("threatsDisplay");
 
-    /* const params = new URLSearchParams(window.location.search);
+    const blocklist = [
+        "malicious",
+        "parked"
+    ];
 
-    console.log(params.get('email'));
-
-    infoDisplay.innerHTML = params.get('email'); */
 
     function generate_ws_signed_url(search_url) {
 
@@ -100,14 +106,60 @@
 
         const response = await axios.get(signed_url);*/
 
-        console.log(response); 
+        console.log(response);
+
+        let category_objects = [];
+
+        response.data.forEach(item => {
+            console.log(item);
+            const item_categories = item.categories;
+
+            item_categories.forEach(cat_object => {
+                category_objects.push(cat_object)
+            })
+            
+        });
+
+        console.log(category_objects);
+
+        const category_ids = category_objects.map(category => category.id);
+
+        console.log(category_ids);
+
+        const found_threat = blocklist.some(r=> category_ids.includes(r));
+
+        console.log(found_threat);
+
+        const threats = blocklist.filter(e => category_ids.indexOf(e) !== -1);
+
+        console.log(threats);
+
+        let form_message;
+        let threat_message = "";
+        let form_message_color;
+
+        if(found_threat){
+            form_message = `Threat Detected. Do not Process`;
+            threat_message = JSON.stringify(threats);
+            form_message_color = "red";
+        }else{
+            form_message = `Entry clean, process form`;
+            form_message_color = "blue";
+        }
+         
+
 
         //window.location.href = `/?email=${response.data.email}`
 
         //infoDisplay.textContent = response.data.email;
-        infoDisplay.innerHTML = response.data.email;
+        infoDisplay.innerHTML = form_message;
+        infoDisplay.style.color = form_message_color;
+        threatsDisplay.innerHTML = threat_message;
+
 
         //infoDisplay.append(email.value);
     }
+
+    
 </script>
 </html>
