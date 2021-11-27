@@ -10,7 +10,14 @@ afterEach(async () => {
   await browser.close();
 }); */
 
-test("Check for XSS attack on email field", async () => {
+const user_email = "test@example.com";
+const non_threat_site = "facebook.com";
+const malicious_site = "selcdn.ru";
+const phishing_site = "mail.glesys.se";
+const expected_safe_site_message = "Entry clean, process form";
+const expected_threat_site_message = "Threat Detected. Do not Process";
+
+test("Check Non-threat Site Entry", async () => {
 
   const browser = await puppeteer.launch();
   try {
@@ -18,14 +25,18 @@ test("Check for XSS attack on email field", async () => {
   
     await page.goto('http://localhost:5000');
 
-    await page.type('#userEmail', '<input type="file" />');
-    await page.type('#userPassword', 'password');
+    await page.type('#userEmail', user_email);
+    await page.type('#userSite', non_threat_site);
     await page.click('#submitButton');
 
-    let emailContainer = await page.$('#infoDisplay')
-    let value = await emailContainer.evaluate(el => el.textContent);
+    let messageContainer = await page.$('#infoDisplay');
+    await page.waitForTimeout(4000);
+    let value = await messageContainer.evaluate(el => el.textContent);
+
+    console.log(value);
+  
+    expect(value).toBe(expected_safe_site_message);
     
-    expect(value.length).toBeGreaterThan(0);
   } finally {
     await browser.close();
   }
@@ -33,26 +44,59 @@ test("Check for XSS attack on email field", async () => {
   
 }, 120000);
 
-/* const {Builder, By, Key, until} = require('selenium-webdriver');
+test("Check Malicious Site Entry", async () => {
 
-(async function example() {
-  let driver = await new Builder().forBrowser('chrome').build();
+  const browser = await puppeteer.launch();
   try {
-    await driver.get('http://localhost:5000');
-    await driver.findElement(By.id('userEmail')).sendKeys('fik4christ@yahoo.com');
-    await driver.findElement(By.id('userPassword')).sendKeys('fikayo');
+    const page = await browser.newPage();
+  
+    await page.goto('http://localhost:5000');
 
+    await page.type('#userEmail', user_email);
+    await page.type('#userSite', malicious_site);
+    await page.click('#submitButton');
+
+    let messageContainer = await page.$('#infoDisplay');
+    await page.waitForTimeout(4000);
+
+    let value = await messageContainer.evaluate(el => el.textContent);
+
+    console.log(value);
+  
+    expect(value).toBe(expected_threat_site_message);
     
-
-    //Submit
-    await driver.findElement(By.id('submitButton')).click();
-
-    const emailText = await driver.findElement(By.id('infoDisplay')).getText();
-
-    console.log(emailText);
-    console.log(emailText.length);
-
   } finally {
-    await driver.quit();
+    await browser.close();
   }
-})(); */
+  
+  
+}, 120000);
+
+test("Check Phishing Site Entry", async () => {
+
+  const browser = await puppeteer.launch();
+  try {
+    const page = await browser.newPage();
+  
+    await page.goto('http://localhost:5000');
+
+    await page.type('#userEmail', user_email);
+    await page.type('#userSite', phishing_site);
+    await page.click('#submitButton');
+
+    let messageContainer = await page.$('#infoDisplay');
+    await page.waitForTimeout(4000);
+
+    let value = await messageContainer.evaluate(el => el.textContent);
+
+    console.log(value);
+  
+    expect(value).toBe(expected_threat_site_message);
+    
+  } finally {
+    await browser.close();
+  }
+  
+  
+}, 120000);
+
